@@ -1,3 +1,21 @@
+apiVersion: v1
+data:
+  secret: base64secret
+kind: Secret
+metadata:
+  name: ceph-admin-secret
+  namespace: kube-system
+type: kubernetes.io/rbd
+---
+apiVersion: v1
+data:
+  key: base64secret
+kind: Secret
+metadata:
+  name: ceph-secret-rabbitmq
+  namespace: rabbitmq
+type: kubernetes.io/rbd
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
