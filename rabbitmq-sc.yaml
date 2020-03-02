@@ -1,0 +1,16 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: rabbitmq-sc
+provisioner: kubernetes.io/rbd
+parameters:
+  monitors: ceph1:6789, ceph2:6789, ceph3:6789
+  adminId: admin
+  adminSecretName: ceph-admin-secret
+  adminSecretNamespace: "kube-system"
+  pool: rabbitmq
+  userId: rabbitmq
+  userSecretName: ceph-secret-rabbitmq
+  userSecretNamespace: rabbitmq
+  imageFormat: "2"
+  imageFeatures: "layering"
