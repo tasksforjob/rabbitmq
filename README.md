@@ -1,4 +1,4 @@
-# rabbitmq
+# Cluster rabbitmq
 Для отказоустойчивости  и маштабируемости RabbitMQ будем использовать Kubernetes.
 В RabbitMQ  будет использоваться плагин RabbitMQ Peer Discovery Kubernetes. Для большой отказаустойчивости развернем кластер RabbitMQ как Stateful Set приложение с Persitent Volumes на кластере Ceph. 
 
@@ -46,5 +46,43 @@
 `queue_master_locator=min-masters`
 
 Определяем суффикс для FQDN пода
-`cluster_formation.k8s.hostname_suffix = .rabbitmq-internal.rabbitmq.svc.cluster.loca`
+`cluster_formation.k8s.hostname_suffix = .rabbitmq-internal.rabbitmq.svc.cluster.local`
 
+### Развернем StateFul Set для RabbitMQ
+
+`kubectl create -f rabbitmq-statefulset.yaml`
+
+В конфигурации устанавливаем количество реплик в значении 3 и указавыаем и ServiceName:
+```
+  serviceName: rabbitmq-internal
+  replicas: 3
+```
+Указываем путь куда монтировать Persistent Volume:
+```
+- name: rabbitmq-data
+    mountPath: /var/lib/rabbitmq/mnesia
+```
+Указываем переменные для FQDN имени.  Имя сервиса.
+Содержимое Erlang Cookie должно быть одинаковым на всех нодах кластера, нужно прописать ваше собственное значение. Нода с отличающимся cookie не сможет войти в кластер.
+```
+          - name: RABBITMQ_NODENAME
+            value: "rabbit@$(HOSTNAME).rabbitmq-internal.$(NAMESPACE).svc.cluster.local"
+          - name: K8S_SERVICE_NAME
+            value: "rabbitmq-internal"
+          - name: RABBITMQ_ERLANG_COOKIE
+            value: "mycookie"
+ ```
+ 
+
+В yaml конфиге добавляем настройку шаблонов для Persitent Volumes:
+```
+  volumeClaimTemplates:
+  - metadata:
+      name: rabbitmq-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: " rabbitmq-rbd"
+      resources:
+        requests:
+          storage: 1Gi
+```
