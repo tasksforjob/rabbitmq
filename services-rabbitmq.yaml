@@ -2,6 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: rabbitmq-internal
+  namespace: rabbitmq
   labels:
     app: rabbitmq
 spec:
@@ -20,6 +21,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: rabbitmq
+  namespace: rabbitmq
   labels:
     app: rabbitmq
     type: LoadBalancer
